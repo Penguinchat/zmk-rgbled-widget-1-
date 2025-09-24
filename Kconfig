@@ -228,22 +228,22 @@ config RGBLED_WIDGET_LAYER_11_COLOR
 config RGBLED_WIDGET_LAYER_12_COLOR
     int "Color to use for layer 12"
     range 0 11
-    default $(PWM_COLOR_BROWN)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_13_COLOR
     int "Color to use for layer 13"
     range 0 11
-    default $(PWM_COLOR_PURPLE)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_14_COLOR
     int "Color to use for layer 14"
     range 0 11
-    default $(PWM_COLOR_TEAL)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_15_COLOR
     int "Color to use for layer 15"
     range 0 11
-    default $(PWM_COLOR_LIGHT_GRAY)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_16_COLOR
     int "Color to use for layer 16"

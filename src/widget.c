@@ -29,6 +29,13 @@
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
+
+// 添加工作项声明
+static struct k_work_delayable indicate_connectivity_work;
+#if SHOW_LAYER_CHANGE
+static struct k_work_delayable layer_indicate_work;
+#endif
+
 // PWM设备定义
 static const struct pwm_dt_spec pwm_red = PWM_DT_SPEC_GET(DT_ALIAS(pwm_red));
 static const struct pwm_dt_spec pwm_green = PWM_DT_SPEC_GET(DT_ALIAS(pwm_green));
@@ -155,6 +162,12 @@ static struct pwm_color persistent_color = COLOR_BLACK;
 // 消息队列
 K_MSGQ_DEFINE(led_msgq, sizeof(struct blink_item), 16, 1);
 
+// 添加工作项回调函数
+static void indicate_connectivity_cb(struct k_work *work) {
+    // 这里需要实现连接指示的内部逻辑
+    // 暂时留空，稍后实现
+}
+
 // 修改消息处理线程
 extern void led_process_thread(void *d0, void *d1, void *d2) {
     ARG_UNUSED(d0);
@@ -164,9 +177,15 @@ extern void led_process_thread(void *d0, void *d1, void *d2) {
     k_work_init_delayable(&indicate_connectivity_work, indicate_connectivity_cb);
 
 #if SHOW_LAYER_CHANGE
-    k_work_init_delayable(&layer_indicate_work, indicate_layer_cb);
+static void indicate_layer_cb(struct k_work *work) {
+    indicate_layer();
+}
 #endif
 
+// 添加连接指示函数
+void indicate_connectivity(void) {
+    k_work_reschedule(&indicate_connectivity_work, K_MSEC(16));
+}
     while (true) {
         struct blink_item blink;
         k_msgq_get(&led_msgq, &blink, K_FOREVER);
@@ -228,7 +247,10 @@ static void indicate_connectivity_internal(void) {
 
     k_msgq_put(&led_msgq, &blink, K_NO_WAIT);
 }
-
+// 更新工作项回调函数
+static void indicate_connectivity_cb(struct k_work *work) {
+    indicate_connectivity_internal();
+}
 // 修改电池指示相关函数
 #if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
 static inline struct pwm_color get_battery_pwm_color(uint8_t battery_level) {
@@ -413,9 +435,12 @@ extern void led_init_thread(void *d0, void *d1, void *d2) {
     LOG_INF("Finished initializing PWM RGB LED widget");
 }
 
+// 添加初始化标志
+static bool initialized = false;
 
+// 定义线程
+K_THREAD_DEFINE(led_process_tid, 1024, led_process_thread, NULL, NULL, NULL,
+                K_LOWEST_APPLICATION_THREAD_PRIO, 0, 100);
 
-
-// run init thread on boot for initial battery+output checks
 K_THREAD_DEFINE(led_init_tid, 1024, led_init_thread, NULL, NULL, NULL,
                 K_LOWEST_APPLICATION_THREAD_PRIO, 0, 200);

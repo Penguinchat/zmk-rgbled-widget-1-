@@ -36,9 +36,17 @@ static const struct pwm_dt_spec pwm_blue = PWM_DT_SPEC_GET(DT_ALIAS(pwm_blue));
 #define PWM_PERIOD_NS 1000000
 
 // 检查PWM设备是否就绪
-BUILD_ASSERT(device_is_ready(pwm_red.dev), "Red PWM device is not ready");
-BUILD_ASSERT(device_is_ready(pwm_green.dev), "Green PWM device is not ready");
-BUILD_ASSERT(device_is_ready(pwm_blue.dev), "Blue PWM device is not ready");
+//BUILD_ASSERT(device_is_ready(pwm_red.dev), "Red PWM device is not ready");
+//BUILD_ASSERT(device_is_ready(pwm_green.dev), "Green PWM device is not ready");
+//BUILD_ASSERT(device_is_ready(pwm_blue.dev), "Blue PWM device is not ready");
+
+// 改为使用设备树节点存在性检查
+BUILD_ASSERT(DT_NODE_EXISTS(DT_ALIAS(pwm_red)),
+             "An alias for red PWM LED is not found for RGBLED_WIDGET");
+BUILD_ASSERT(DT_NODE_EXISTS(DT_ALIAS(pwm_green)),
+             "An alias for green PWM LED is not found for RGBLED_WIDGET");
+BUILD_ASSERT(DT_NODE_EXISTS(DT_ALIAS(pwm_blue)),
+             "An alias for blue PWM LED is not found for RGBLED_WIDGET");
 
 // 扩展的颜色映射（支持更多颜色）
 static const struct pwm_color color_map[] = {
@@ -57,6 +65,25 @@ static const struct pwm_color color_map[] = {
     [11] = {0xFFFF, 0x8000, 0},  // 橙色
 };
 
+// 添加PWM设备状态检查函数
+static bool check_pwm_devices(void) {
+    if (!device_is_ready(pwm_red.dev)) {
+        LOG_ERR("Red PWM device is not ready");
+        return false;
+    }
+    if (!device_is_ready(pwm_green.dev)) {
+        LOG_ERR("Green PWM device is not ready");
+        return false;
+    }
+    if (!device_is_ready(pwm_blue.dev)) {
+        LOG_ERR("Blue PWM device is not ready");
+        return false;
+    }
+    return true;
+}
+
+
+
 // 将颜色索引转换为PWM颜色
 struct pwm_color index_to_pwm_color(uint8_t index) {
     if (index < ARRAY_SIZE(color_map)) {
@@ -64,10 +91,40 @@ struct pwm_color index_to_pwm_color(uint8_t index) {
     }
     return PWM_COLOR_BLACK;
 }
-
+/*
 // 设置PWM颜色（替换原来的GPIO设置）
 void set_pwm_color(struct pwm_color color) {
     int ret;
+    
+    // 设置红色通道
+    ret = pwm_set_pulse_dt(&pwm_red, color.r);
+    if (ret < 0) {
+        LOG_ERR("Failed to set red PWM: %d", ret);
+    }
+    
+    // 设置绿色通道
+    ret = pwm_set_pulse_dt(&pwm_green, color.g);
+    if (ret < 0) {
+        LOG_ERR("Failed to set green PWM: %d", ret);
+    }
+    
+    // 设置蓝色通道
+    ret = pwm_set_pulse_dt(&pwm_blue, color.b);
+    if (ret < 0) {
+        LOG_ERR("Failed to set blue PWM: %d", ret);
+    }
+}*/
+// 修改set_pwm_color函数，添加错误处理
+void set_pwm_color(struct pwm_color color) {
+    int ret;
+    
+    // 检查设备是否就绪
+    if (!device_is_ready(pwm_red.dev) || 
+        !device_is_ready(pwm_green.dev) || 
+        !device_is_ready(pwm_blue.dev)) {
+        LOG_ERR("PWM devices not ready");
+        return;
+    }
     
     // 设置红色通道
     ret = pwm_set_pulse_dt(&pwm_red, color.r);
@@ -298,7 +355,7 @@ extern void led_process_thread(void *d0, void *d1, void *d2) {
 // boot
 K_THREAD_DEFINE(led_process_tid, 1024, led_process_thread, NULL, NULL, NULL,
                 K_LOWEST_APPLICATION_THREAD_PRIO, 0, 100);
-
+/*
 extern void led_init_thread(void *d0, void *d1, void *d2) {
     ARG_UNUSED(d0);
     ARG_UNUSED(d1);
@@ -326,6 +383,46 @@ extern void led_init_thread(void *d0, void *d1, void *d2) {
     initialized = true;
     LOG_INF("Finished initializing LED widget");
 }
+*/
+// 修改初始化线程，添加PWM设备检查
+extern void led_init_thread(void *d0, void *d1, void *d2) {
+    ARG_UNUSED(d0);
+    ARG_UNUSED(d1);
+    ARG_UNUSED(d2);
+
+    // 检查PWM设备是否就绪
+    if (!check_pwm_devices()) {
+        LOG_ERR("PWM devices not available, RGB LED widget disabled");
+        return;
+    }
+
+    LOG_INF("PWM RGB LED widget initialized successfully");
+
+    k_work_init_delayable(&indicate_connectivity_work, indicate_connectivity_cb);
+
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
+    // 检查并指示电池电平
+    LOG_INF("Indicating initial battery status");
+    indicate_battery();
+
+    k_sleep(K_MSEC(CONFIG_RGBLED_WIDGET_BATTERY_BLINK_MS + CONFIG_RGBLED_WIDGET_INTERVAL_MS));
+#endif
+
+    // 检查并指示连接状态
+    LOG_INF("Indicating initial connectivity status");
+    indicate_connectivity();
+
+#if SHOW_LAYER_COLORS
+    LOG_INF("Setting initial layer color");
+    update_layer_color();
+#endif
+
+    initialized = true;
+    LOG_INF("Finished initializing PWM RGB LED widget");
+}
+
+
+
 
 // run init thread on boot for initial battery+output checks
 K_THREAD_DEFINE(led_init_tid, 1024, led_init_thread, NULL, NULL, NULL,

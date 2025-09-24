@@ -91,27 +91,27 @@ config RGBLED_WIDGET_BATTERY_LEVEL_CRITICAL
 config RGBLED_WIDGET_BATTERY_COLOR_HIGH
     int "Color for high battery level (above LEVEL_HIGH)"
     range 0 11
-    default $(COLOR_GREEN)
+    default $(PWM_COLOR_GREEN)
 
 config RGBLED_WIDGET_BATTERY_COLOR_MEDIUM
     int "Color for medium battery level (between LEVEL_LOW and LEVEL_HIGH)"
     range 0 11
-    default $(COLOR_YELLOW)
+    default $(PWM_COLOR_YELLOW)
 
 config RGBLED_WIDGET_BATTERY_COLOR_LOW
     int "Color for low battery level (below LEVEL_LOW)"
     range 0 11
-    default $(COLOR_RED)
+    default $(PWM_COLOR_RED)
 
 config RGBLED_WIDGET_BATTERY_COLOR_CRITICAL
     int "Color for critical battery level (below LEVEL_CRITICAL)"
     range 0 11
-    default $(COLOR_RED)
+    default $(PWM_COLOR_RED)
 
 config RGBLED_WIDGET_BATTERY_COLOR_MISSING
     int "Color for battery not detected, or peripheral disconnected"
     range 0 11
-    default $(COLOR_MAGENTA)
+    default $(PWM_COLOR_MAGENTA)
 
 # Connectivity indicator settings
 config RGBLED_WIDGET_CONN_BLINK_MS
@@ -128,22 +128,22 @@ config RGBLED_WIDGET_OUTPUT_BLINK_MS  # DEPRECATED, do not use
 config RGBLED_WIDGET_CONN_COLOR_CONNECTED
     int "Color for connected BLE connection status"
     range 0 11
-    default $(COLOR_BLUE)
+    default $(PWM_COLOR_BLUE)
 
 config RGBLED_WIDGET_CONN_COLOR_ADVERTISING
     int "Color for advertising BLE connection status"
     range 0 11
-    default $(COLOR_YELLOW)
+    default $(PWM_COLOR_YELLOW)
 
 config RGBLED_WIDGET_CONN_COLOR_DISCONNECTED
     int "Color for disconnected BLE connection status"
     range 0 11
-    default $(COLOR_RED)
+    default $(PWM_COLOR_RED)
 
 config RGBLED_WIDGET_CONN_COLOR_USB
     int "Color for USB endpoint active"
     range 0 11
-    default $(COLOR_CYAN)
+    default $(PWM_COLOR_CYAN)
 
 # Layer indicator settings
 config RGBLED_WIDGET_SHOW_LAYER_CHANGE
@@ -156,7 +156,7 @@ config RGBLED_WIDGET_LAYER_BLINK_MS
 config RGBLED_WIDGET_LAYER_COLOR
     int "Color to use for layer indicator"
     range 0 11
-    default $(COLOR_CYAN)
+    default $(PWM_COLOR_CYAN)
 
 config RGBLED_WIDGET_LAYER_DEBOUNCE_MS
     int "Wait duration after a layer change before showing the highest active layer"
@@ -169,161 +169,161 @@ config RGBLED_WIDGET_SHOW_LAYER_COLORS
 config RGBLED_WIDGET_LAYER_0_COLOR
     int "Color to use for the base layer"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_1_COLOR
     int "Color to use for layer 1"
     range 0 11
-    default $(COLOR_RED)
+    default $(PWM_COLOR_RED)
 config RGBLED_WIDGET_LAYER_2_COLOR
     int "Color to use for layer 2"
     range 0 11
-    default $(COLOR_GREEN)
+    default $(PWM_COLOR_GREEN)
 
 config RGBLED_WIDGET_LAYER_3_COLOR
     int "Color to use for layer 3"
     range 0 11
-    default $(COLOR_YELLOW)
+    default $(PWM_COLOR_YELLOW)
 
 config RGBLED_WIDGET_LAYER_4_COLOR
     int "Color to use for layer 4"
     range 0 11
-    default $(COLOR_BLUE)
+    default $(PWM_COLOR_BLUE)
 
 config RGBLED_WIDGET_LAYER_5_COLOR
     int "Color to use for layer 5"
     range 0 11
-    default $(COLOR_MAGENTA)
+    default $(PWM_COLOR_MAGENTA)
 
 config RGBLED_WIDGET_LAYER_6_COLOR
     int "Color to use for layer 6"
     range 0 11
-    default $(COLOR_CYAN)
+    default $(PWM_COLOR_CYAN)
 
 config RGBLED_WIDGET_LAYER_7_COLOR
     int "Color to use for layer 7"
     range 0 11
-    default $(COLOR_WHITE)
+    default $(PWM_COLOR_WHITE)
 
 config RGBLED_WIDGET_LAYER_8_COLOR
     int "Color to use for layer 8"
     range 0 11
-    default $(COLOR_DARK_RED)
+    default $(PWM_COLOR_DARK_RED)
 
 config RGBLED_WIDGET_LAYER_9_COLOR
     int "Color to use for layer 9"
     range 0 11
-    default $(COLOR_DARK_GREEN)
+    default $(PWM_COLOR_DARK_GREEN)
 
 config RGBLED_WIDGET_LAYER_10_COLOR
     int "Color to use for layer 10"
     range 0 11
-    default $(COLOR_DARK_BLUE)
+    default $(PWM_COLOR_DARK_BLUE)
 
 config RGBLED_WIDGET_LAYER_11_COLOR
     int "Color to use for layer 11"
     range 0 11
-    default $(COLOR_ORANGE)
+    default $(PWM_COLOR_ORANGE)
 
 config RGBLED_WIDGET_LAYER_12_COLOR
     int "Color to use for layer 12"
     range 0 11
-    default $(COLOR_BROWN)
+    default $(PWM_COLOR_BROWN)
 
 config RGBLED_WIDGET_LAYER_13_COLOR
     int "Color to use for layer 13"
     range 0 11
-    default $(COLOR_PURPLE)
+    default $(PWM_COLOR_PURPLE)
 
 config RGBLED_WIDGET_LAYER_14_COLOR
     int "Color to use for layer 14"
     range 0 11
-    default $(COLOR_TEAL)
+    default $(PWM_COLOR_TEAL)
 
 config RGBLED_WIDGET_LAYER_15_COLOR
     int "Color to use for layer 15"
     range 0 11
-    default $(COLOR_LIGHT_GRAY)
+    default $(PWM_COLOR_LIGHT_GRAY)
 
 config RGBLED_WIDGET_LAYER_16_COLOR
     int "Color to use for layer 16"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_17_COLOR
     int "Color to use for layer 17"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_18_COLOR
     int "Color to use for layer 18"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_19_COLOR
     int "Color to use for layer 19"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_20_COLOR
     int "Color to use for layer 20"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_21_COLOR
     int "Color to use for layer 21"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_22_COLOR
     int "Color to use for layer 22"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_23_COLOR
     int "Color to use for layer 23"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_24_COLOR
     int "Color to use for layer 24"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_25_COLOR
     int "Color to use for layer 25"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_26_COLOR
     int "Color to use for layer 26"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_27_COLOR
     int "Color to use for layer 27"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_28_COLOR
     int "Color to use for layer 28"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_29_COLOR
     int "Color to use for layer 29"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_30_COLOR
     int "Color to use for layer 30"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 config RGBLED_WIDGET_LAYER_31_COLOR
     int "Color to use for layer 31"
     range 0 11
-    default $(COLOR_BLACK)
+    default $(PWM_COLOR_BLACK)
 
 # Advanced PWM settings (only visible when PWM driver is selected)
 if RGBLED_WIDGET_DRIVER_PWM

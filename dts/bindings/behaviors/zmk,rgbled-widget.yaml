@@ -1,3 +1,4 @@
+# zmk,rgbled-widget.yaml
 description: RGB LED widget indicator behavior
 
 compatible: "zmk,behavior-rgbled-widget"
@@ -11,3 +12,7 @@ properties:
     type: boolean
   indicate-layer:
     type: boolean
+  # 添加PWM相关属性（可选）
+  pwm-leds:
+    type: phandle-array
+    required: false

@@ -5,7 +5,27 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 
-// ... 其他include保持不变
+#include <zmk/battery.h>
+#include <zmk/ble.h>
+#include <zmk/endpoints.h>
+#include <zmk/events/battery_state_changed.h>
+#include <zmk/events/ble_active_profile_changed.h>
+#include <zmk/events/endpoint_changed.h>
+#include <zmk/events/layer_state_changed.h>
+#include <zmk/events/split_peripheral_status_changed.h>
+#include <zmk/events/activity_state_changed.h>
+#include <zmk/keymap.h>
+#include <zmk/split/bluetooth/peripheral.h>
+
+#if __has_include(<zmk/split/central.h>)
+#include <zmk/split/central.h>
+#else
+#include <zmk/split/bluetooth/central.h>
+#endif
+
+#include <zephyr/logging/log.h>
+
+#include <zmk_rgbled_widget/widget.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 

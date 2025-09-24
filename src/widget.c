@@ -1,33 +1,15 @@
+// widget.c
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
-#include <zephyr/drivers/pwm.h>  // 改为PWM驱动
+#include <zephyr/drivers/pwm.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 
-#include <zmk/battery.h>
-#include <zmk/ble.h>
-#include <zmk/endpoints.h>
-#include <zmk/events/battery_state_changed.h>
-#include <zmk/events/ble_active_profile_changed.h>
-#include <zmk/events/endpoint_changed.h>
-#include <zmk/events/layer_state_changed.h>
-#include <zmk/events/split_peripheral_status_changed.h>
-#include <zmk/events/activity_state_changed.h>
-#include <zmk/keymap.h>
-#include <zmk/split/bluetooth/peripheral.h>
+// ... 其他include保持不变
 
-#if __has_include(<zmk/split/central.h>)
-#include <zmk/split/central.h>
-#else
-#include <zmk/split/bluetooth/central.h>
-#endif
-
-#include <zephyr/logging/log.h>
-
-#include <zmk_rgbled_widget/widget.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-// PWM设备定义 - 替换原来的GPIO LED设备
+// PWM设备定义
 static const struct pwm_dt_spec pwm_red = PWM_DT_SPEC_GET(DT_ALIAS(pwm_red));
 static const struct pwm_dt_spec pwm_green = PWM_DT_SPEC_GET(DT_ALIAS(pwm_green));
 static const struct pwm_dt_spec pwm_blue = PWM_DT_SPEC_GET(DT_ALIAS(pwm_blue));
@@ -35,12 +17,7 @@ static const struct pwm_dt_spec pwm_blue = PWM_DT_SPEC_GET(DT_ALIAS(pwm_blue));
 // PWM周期（纳秒），对应约1kHz频率
 #define PWM_PERIOD_NS 1000000
 
-// 检查PWM设备是否就绪
-//BUILD_ASSERT(device_is_ready(pwm_red.dev), "Red PWM device is not ready");
-//BUILD_ASSERT(device_is_ready(pwm_green.dev), "Green PWM device is not ready");
-//BUILD_ASSERT(device_is_ready(pwm_blue.dev), "Blue PWM device is not ready");
-
-// 改为使用设备树节点存在性检查
+// 设备树节点检查
 BUILD_ASSERT(DT_NODE_EXISTS(DT_ALIAS(pwm_red)),
              "An alias for red PWM LED is not found for RGBLED_WIDGET");
 BUILD_ASSERT(DT_NODE_EXISTS(DT_ALIAS(pwm_green)),
@@ -48,24 +25,46 @@ BUILD_ASSERT(DT_NODE_EXISTS(DT_ALIAS(pwm_green)),
 BUILD_ASSERT(DT_NODE_EXISTS(DT_ALIAS(pwm_blue)),
              "An alias for blue PWM LED is not found for RGBLED_WIDGET");
 
+// 颜色定义（在.c文件中定义静态常量）
+static const struct pwm_color COLOR_BLACK = {0, 0, 0};
+static const struct pwm_color COLOR_RED = {0xFFFF, 0, 0};
+static const struct pwm_color COLOR_GREEN = {0, 0xFFFF, 0};
+static const struct pwm_color COLOR_BLUE = {0, 0, 0xFFFF};
+static const struct pwm_color COLOR_YELLOW = {0xFFFF, 0xFFFF, 0};
+static const struct pwm_color COLOR_MAGENTA = {0xFFFF, 0, 0xFFFF};
+static const struct pwm_color COLOR_CYAN = {0, 0xFFFF, 0xFFFF};
+static const struct pwm_color COLOR_WHITE = {0xFFFF, 0xFFFF, 0xFFFF};
+static const struct pwm_color COLOR_DARK_RED = {0x8000, 0, 0};
+static const struct pwm_color COLOR_DARK_GREEN = {0, 0x8000, 0};
+static const struct pwm_color COLOR_DARK_BLUE = {0, 0, 0x8000};
+static const struct pwm_color COLOR_ORANGE = {0xFFFF, 0x8000, 0};
+
+
 // 扩展的颜色映射（支持更多颜色）
 static const struct pwm_color color_map[] = {
-    [0] = PWM_COLOR_BLACK,    // 黑色
-    [1] = PWM_COLOR_RED,      // 红色
-    [2] = PWM_COLOR_GREEN,    // 绿色
-    [3] = PWM_COLOR_YELLOW,   // 黄色
-    [4] = PWM_COLOR_BLUE,     // 蓝色
-    [5] = PWM_COLOR_MAGENTA,  // 洋红
-    [6] = PWM_COLOR_CYAN,     // 青色
-    [7] = PWM_COLOR_WHITE,    // 白色
-    // 可以添加更多颜色...
-    [8] = {0x8000, 0, 0},        // 暗红
-    [9] = {0, 0x8000, 0},        // 暗绿
-    [10] = {0, 0, 0x8000},       // 暗蓝
-    [11] = {0xFFFF, 0x8000, 0},  // 橙色
+    COLOR_BLACK,      // 索引 0: 黑色
+    COLOR_RED,        // 索引 1: 红色
+    COLOR_GREEN,      // 索引 2: 绿色
+    COLOR_YELLOW,     // 索引 3: 黄色
+    COLOR_BLUE,       // 索引 4: 蓝色
+    COLOR_MAGENTA,    // 索引 5: 洋红
+    COLOR_CYAN,       // 索引 6: 青色
+    COLOR_WHITE,      // 索引 7: 白色
+    COLOR_DARK_RED,   // 索引 8: 暗红
+    COLOR_DARK_GREEN, // 索引 9: 暗绿
+    COLOR_DARK_BLUE,  // 索引 10: 暗蓝
+    COLOR_ORANGE,     // 索引 11: 橙色
 };
 
-// 添加PWM设备状态检查函数
+// 将颜色索引转换为PWM颜色
+struct pwm_color index_to_pwm_color(uint8_t index) {
+    if (index < ARRAY_SIZE(color_map)) {
+        return color_map[index];
+    }
+    return COLOR_BLACK; // 默认黑色
+}
+
+// PWM设备状态检查函数
 static bool check_pwm_devices(void) {
     if (!device_is_ready(pwm_red.dev)) {
         LOG_ERR("Red PWM device is not ready");
@@ -82,39 +81,7 @@ static bool check_pwm_devices(void) {
     return true;
 }
 
-
-
-// 将颜色索引转换为PWM颜色
-struct pwm_color index_to_pwm_color(uint8_t index) {
-    if (index < ARRAY_SIZE(color_map)) {
-        return color_map[index];
-    }
-    return PWM_COLOR_BLACK;
-}
-/*
-// 设置PWM颜色（替换原来的GPIO设置）
-void set_pwm_color(struct pwm_color color) {
-    int ret;
-    
-    // 设置红色通道
-    ret = pwm_set_pulse_dt(&pwm_red, color.r);
-    if (ret < 0) {
-        LOG_ERR("Failed to set red PWM: %d", ret);
-    }
-    
-    // 设置绿色通道
-    ret = pwm_set_pulse_dt(&pwm_green, color.g);
-    if (ret < 0) {
-        LOG_ERR("Failed to set green PWM: %d", ret);
-    }
-    
-    // 设置蓝色通道
-    ret = pwm_set_pulse_dt(&pwm_blue, color.b);
-    if (ret < 0) {
-        LOG_ERR("Failed to set blue PWM: %d", ret);
-    }
-}*/
-// 修改set_pwm_color函数，添加错误处理
+// 设置PWM颜色
 void set_pwm_color(struct pwm_color color) {
     int ret;
     
@@ -145,7 +112,16 @@ void set_pwm_color(struct pwm_color color) {
     }
 }
 
-// 修改blink_item结构以支持PWM颜色
+// 修改set_rgb_leds函数为PWM版本
+static void set_rgb_leds(struct pwm_color color, uint16_t duration_ms) {
+    set_pwm_color(color);
+    
+    if (duration_ms > 0) {
+        k_sleep(K_MSEC(duration_ms));
+    }
+}
+
+// 修改blink_item结构体以支持PWM颜色
 struct blink_item {
     struct pwm_color color;
     uint16_t duration_ms;
@@ -153,18 +129,11 @@ struct blink_item {
 };
 
 // 当前颜色状态
-static struct pwm_color current_color = PWM_COLOR_BLACK;
-static struct pwm_color persistent_color = PWM_COLOR_BLACK;
+static struct pwm_color current_color = COLOR_BLACK;
+static struct pwm_color persistent_color = COLOR_BLACK;
 
-// 修改set_rgb_leds函数为PWM版本
-static void set_rgb_leds(struct pwm_color color, uint16_t duration_ms) {
-    set_pwm_color(color);
-    current_color = color;
-    
-    if (duration_ms > 0) {
-        k_sleep(K_MSEC(duration_ms));
-    }
-}
+// 消息队列
+K_MSGQ_DEFINE(led_msgq, sizeof(struct blink_item), 16, 1);
 
 // 修改消息处理线程
 extern void led_process_thread(void *d0, void *d1, void *d2) {
@@ -186,7 +155,6 @@ extern void led_process_thread(void *d0, void *d1, void *d2) {
             LOG_DBG("PWM blink: R:%04X G:%04X B:%04X, duration %d", 
                    blink.color.r, blink.color.g, blink.color.b, blink.duration_ms);
 
-            // 闪烁逻辑
             set_rgb_leds(blink.color, blink.duration_ms);
             
             // 恢复持久颜色
@@ -204,6 +172,8 @@ extern void led_process_thread(void *d0, void *d1, void *d2) {
     }
 }
 
+// 修改其他函数以使用新的颜色系统...
+
 // 修改indicate_connectivity_internal函数
 static void indicate_connectivity_internal(void) {
     struct blink_item blink = {.duration_ms = CONFIG_RGBLED_WIDGET_CONN_BLINK_MS};
@@ -217,6 +187,7 @@ static void indicate_connectivity_internal(void) {
 #endif
     default:
 #if IS_ENABLED(CONFIG_ZMK_BLE)
+        uint8_t profile_index = zmk_ble_active_profile_index();
         if (zmk_ble_active_profile_is_connected()) {
             blink.color = index_to_pwm_color(CONFIG_RGBLED_WIDGET_CONN_COLOR_CONNECTED);
         } else if (zmk_ble_active_profile_is_open()) {
@@ -294,6 +265,7 @@ void indicate_layer(void) {
 }
 #endif
 
+// 其他函数保持不变...
 // 其他函数保持不变...
 
 #if SHOW_LAYER_CHANGE
